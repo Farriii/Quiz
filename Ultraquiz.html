@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSK1 Vocabulary Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            width: 600px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: #4caf50;
+            width: 0;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        #question-number {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #ddd;
+        }
+
+        #question {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .options-grid button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .options-grid button.selected {
+            background: #8a2be2; /* Purple for selected option */
+            transform: scale(1.05);
+        }
+
+        .options-grid button:hover:not(.selected) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            background: #fff;
+            color: #2575fc;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .button-container button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            color: #aaa;
+        }
+
+        .button-container button:hover:not(:disabled) {
+            background: #2575fc;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        #submit-button {
+            background: #4caf50;
+            color: #fff;
+        }
+
+        #submit-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        #result {
+            font-size: 1.1rem;
+            margin-top: 20px;
+            color: #ffdd57;
+        }
+
+        #result.incorrect {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        #score {
+            font-size: 1.1rem;
+            margin-top: 10px;
+            color: #4caf50;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #review-section {
+            margin-top: 30px;
+        }
+
+        .incorrect-answer-item {
+            background: rgba(255, 0, 0, 0.1);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: left;
+        }
+
+        #email-section {
+            margin-top: 20px;
+        }
+
+        #email-input {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+
+        #email-submit {
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        #email-submit:hover {
+            background: #45a049;
+        }
+
+        #summary {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #ffdd57;
+        }
+
+        .arrow-button {
+            font-size: 1.5rem;
+            padding: 10px 15px;
+        }
+
+        .quiz-interface {
+            display: block;
+        }
+
+        .quiz-interface.hidden {
+            display: none;
+        }
+
+        .end-screen {
+            display: none;
+        }
+
+        .end-screen.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>HSK1 Vocabulary Quiz</h1>
+        <div class="quiz-interface">
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <p id="question-number"></p>
+            <div id="question-container">
+                <p id="question"></p>
+                <div id="options-container" class="options-grid"></div>
+            </div>
+            <div class="button-container">
+                <button id="prev-button" class="arrow-button">←</button>
+                <button id="next-button" class="arrow-button">→</button>
+                <button id="submit-button" disabled>Submit</button>
+            </div>
+            <p id="result"></p>
+            <p id="score"></p>
+        </div>
+        <div class="end-screen">
+            <div id="review-section">
+                <h2>Incorrect Answers</h2>
+                <div id="incorrect-answers-list"></div>
+            </div>
+            <div id="summary"></div>
+            <div id="email-section">
+                <h2>Get Your Results</h2>
+                <input type="email" id="email-input" placeholder="Enter your email to receive results">
+                <button id="email-submit">Send Results</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript Code
+        const hsk1Words = [
+            { word: "你好", pinyin: "nǐ hǎo", meaning: "Hello" },
+            { word: "谢谢", pinyin: "xiè xie", meaning: "Thank you" },
+            { word: "再见", pinyin: "zài jiàn", meaning: "Goodbye" },
+            { word: "我", pinyin: "wǒ", meaning: "I/Me" },
+            { word: "你", pinyin: "nǐ", meaning: "You" },
+            { word: "他", pinyin: "tā", meaning: "He/Him" },
+            { word: "她", pinyin: "tā", meaning: "She/Her" },
+            { word: "我们", pinyin: "wǒ men", meaning: "We/Us" },
+            { word: "这", pinyin: "zhè", meaning: "This" },
+            { word: "那", pinyin: "nà", meaning: "That" },
+            // Add all remaining HSK1 words here
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let incorrectAnswers = [];
+
+        const elements = {
+            question: document.getElementById("question"),
+            optionsContainer: document.getElementById("options-container"),
+            submitButton: document.getElementById("submit-button"),
+            nextButton: document.getElementById("next-button"),
+            prevButton: document.getElementById("prev-button"),
+            result: document.getElementById("result"),
+            score: document.getElementById("score"),
+            progressBar: document.getElementById("progress-bar"),
+            reviewSection: document.getElementById("review-section"),
+            incorrectAnswersList: document.getElementById("incorrect-answers-list"),
+            emailSection: document.getElementById("email-section"),
+            emailInput: document.getElementById("email-input"),
+            emailSubmit: document.getElementById("email-submit"),
+            questionNumber: document.getElementById("question-number"),
+            summary: document.getElementById("summary"),
+            quizInterface: document.querySelector('.quiz-interface'),
+            endScreen: document.querySelector('.end-screen')
+        };
+
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / hsk1Words.length) * 100;
+            elements.progressBar.style.width = `${progress}%`;
+        }
+
+        function showQuestion() {
+            const currentQuestion = hsk1Words[currentQuestionIndex];
+            
+            elements.question.textContent = `What does "${currentQuestion.word}" (${currentQuestion.pinyin}) mean?`;
+            elements.optionsContainer.innerHTML = '';
+
+            // Generate options
+            const options = [currentQuestion.meaning];
+            while (options.length < 4) {
+                const randomWord = hsk1Words[Math.floor(Math.random() * hsk1Words.length)].meaning;
+                if (!options.includes(randomWord)) options.push(randomWord);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(option => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.addEventListener("click", () => {
+                    document.querySelectorAll('#options-container button').forEach(b => b.classList.remove('selected'));
+                    button.classList.add('selected');
+                    selectedAnswer = option;
+                    elements.submitButton.disabled = false;
+                });
+                elements.optionsContainer.appendChild(button);
+            });
+
+            elements.submitButton.disabled = true;
+            updateProgress();
+            updateNavigation();
+            elements.questionNumber.textContent = `Question ${currentQuestionIndex + 1} of ${hsk1Words.length}`;
+        }
+
+        function updateNavigation() {
+            elements.prevButton.disabled = currentQuestionIndex === 0;
+            elements.nextButton.disabled = currentQuestionIndex === hsk1Words.length - 1;
+        }
+
+        function checkAnswer() {
+            const currentQuestion = hsk1Words[currentQuestionIndex];
+            if (selectedAnswer === currentQuestion.meaning) {
+                score++;
+                elements.result.textContent = "Correct! 🎉";
+                elements.result.classList.remove('incorrect');
+                setTimeout(() => {
+                    navigate('next');
+                }, 1000); // Move to next question after 1 second
+            } else {
+                elements.result.textContent = `Incorrect! The correct answer is "${currentQuestion.meaning}".`;
+                elements.result.classList.add('incorrect');
+                incorrectAnswers.push({
+                    question: currentQuestion,
+                    selectedAnswer
+                });
+                setTimeout(() => {
+                    navigate('next');
+                }, 4000); // Move to next question after 4 seconds
+            }
+            elements.submitButton.disabled = true;
+            updateScore();
+        }
+
+        function showReview() {
+            elements.incorrectAnswersList.innerHTML = incorrectAnswers.map(answer => `
+                <div class="incorrect-answer-item">
+                    <p><strong>${answer.question.word}</strong> (${answer.question.pinyin})</p>
+                    <p>Correct answer: ${answer.question.meaning}</p>
+                    <p>Your answer: ${answer.selectedAnswer}</p>
+                </div>
+            `).join('');
+        }
+
+        function showSummary() {
+            elements.summary.innerHTML = `
+                <h2>Quiz Summary</h2>
+                <p>Your final score is <strong>${score}/${hsk1Words.length}</strong>.</p>
+            `;
+        }
+
+        function updateScore() {
+            elements.score.textContent = `Score: ${score}/${hsk1Words.length}`;
+        }
+
+        function navigate(direction) {
+            if (direction === 'next' && currentQuestionIndex < hsk1Words.length - 1) {
+                currentQuestionIndex++;
+            } else if (direction === 'prev' && currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+            }
+
+            if (currentQuestionIndex < hsk1Words.length) {
+                showQuestion();
+                elements.result.textContent = "";
+            }
+
+            if (currentQuestionIndex === hsk1Words.length - 1) {
+                elements.nextButton.disabled = true;
+                endQuiz();
+            }
+        }
+
+        function endQuiz() {
+            elements.quizInterface.classList.add('hidden');
+            elements.endScreen.classList.add('visible');
+            showReview();
+            showSummary();
+        }
+
+        // Event Listeners
+        elements.submitButton.addEventListener("click", checkAnswer);
+        elements.nextButton.addEventListener("click", () => navigate('next'));
+        elements.prevButton.addEventListener("click", () => navigate('prev'));
+        elements.emailSubmit.addEventListener("click", () => {
+            const email = elements.emailInput.value;
+            if (email) {
+                alert(`Results will be sent to ${email}. (Note: This is a demo; no emails are actually sent.)`);
+            } else {
+                alert("Please enter a valid email address.");
+            }
+        });
+
+        // Initialize Quiz
+        showQuestion();
+    </script>
+</body>
+</html>
